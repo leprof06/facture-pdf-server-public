@@ -2,8 +2,8 @@
 import { google } from "googleapis";
 import { authorizeGoogle } from "../../config/auth.js";
 
-const SPREADSHEET_ID = "1EDW7_34dnjCHBtqd4jXrYgOB8HovgPdXcuod1k3_i4A"; // Remplace par ton ID correct
-const RANGE = "Clients!A2:G";
+const SPREADSHEET_ID = "...."; // Remplace par ton ID correct
+const RANGE = "...";
 
 export async function findClientByEmail(email) {
   const auth = await authorizeGoogle();
