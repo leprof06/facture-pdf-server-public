@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export async function envoyerEmailConfirmationClient(email, nom, credits) {
-  const lienCalendrier = "https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ0TIGBOOp1jt2zjcaUV-LwN9a11zz50QPB5Z3BMKnmCNn7ER767-_yT3Cqd_u5PaudtPUERO0pH";
+  const lienCalendrier = "lien google calendar";
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
