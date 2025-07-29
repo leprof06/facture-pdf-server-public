@@ -3,7 +3,12 @@
 import { google } from "googleapis";
 import { authorizeGoogle, SPREADSHEET_ID } from "../../config/auth.js";
 
+<<<<<<< HEAD
 const CLIENTS_RANGE = "Clients!A2:G";
+=======
+const SPREADSHEET_ID = "...."; // Remplace par ton ID correct
+const RANGE = "...";
+>>>>>>> d6675144a9210805baf0dfa9aef50cc53424f788
 
 // 🔍 Trouver un client par email
 export async function findClientByEmail(email) {

@@ -4,6 +4,7 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
 
+<<<<<<< HEAD
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -11,6 +12,10 @@ const transporter = nodemailer.createTransport({
     pass: process.env.GMAIL_PASS,
   },
 });
+=======
+export async function envoyerEmailConfirmationClient(email, nom, credits) {
+  const lienCalendrier = "lien google calendar";
+>>>>>>> d6675144a9210805baf0dfa9aef50cc53424f788
 
 /**
  * Envoie un email personnalisé selon le type de produit traité
