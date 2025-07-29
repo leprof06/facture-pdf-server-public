@@ -1,42 +1,50 @@
-// /utils/airtable/decrementCredits.js
-import fetch from "node-fetch";
-import dotenv from "dotenv";
-import { AIRTABLE_URL } from "./constantes.js";
+// ✅ /utils/google/decrementCredits.js
 
-dotenv.config();
+import { google } from "googleapis";
+import { authorizeGoogle, SPREADSHEET_ID } from "../../config/auth.js";
+
+const RANGE = "Clients!A2:G"; // On lit tout le tableau
 
 export async function decrementCredits(email) {
-  const response = await fetch(`${AIRTABLE_URL}?filterByFormula={Email}='${email}'`, {
-    headers: {
-      Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}`,
-    },
+  const auth = await authorizeGoogle();
+  const sheets = google.sheets({ version: "v4", auth });
+
+  // 1. Lecture des données actuelles
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: RANGE,
   });
 
-  if (!response.ok) {
-    const errorData = await response.text();
-    throw new Error(`Erreur lors de la lecture Airtable : ${errorData}`);
+  const rows = res.data.values;
+  if (!rows || rows.length === 0) {
+    console.warn("📭 Aucun client trouvé dans la feuille.");
+    return;
   }
 
-  const data = await response.json();
-  if (data.records && data.records.length === 0) return;
-
-  const record = data.records[0];
-  const id = record.id;
-  const current = record.fields["Crédits restants"] || 0;
-  const updated = current > 0 ? current - 1 : 0;
-
-  await fetch(`${AIRTABLE_URL}/${id}`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      fields: {
-        "Crédits restants": updated,
-      },
-    }),
+  // 2. Trouver la ligne correspondante à l’email
+  const rowIndex = rows.findIndex((row) => {
+    const emailCell = row[1]?.toLowerCase().trim() || "";
+    return emailCell === email.toLowerCase().trim();
   });
 
-  console.log(`🔄 Crédit mis à jour : ${current} → ${updated}`);
+  if (rowIndex === -1) {
+    console.warn(`📭 Client avec l'email "${email}" non trouvé.`);
+    return;
+  }
+
+  const ligne = rows[rowIndex];
+  const currentCredits = parseInt(ligne[6] || "0", 10); // Colonne G (index 6)
+  const updatedCredits = currentCredits > 0 ? currentCredits - 1 : 0;
+
+  // 3. Mise à jour de la cellule correspondante (G = colonne 7)
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `Clients!G${rowIndex + 2}`, // +2 car A2 = ligne 2
+    valueInputOption: "RAW",
+    requestBody: {
+      values: [[updatedCredits]],
+    },
+  });
+
+  console.log(`🔄 Crédit mis à jour pour ${email} : ${currentCredits} → ${updatedCredits}`);
 }

@@ -16,7 +16,7 @@ export async function envoyerFacturePDF(facture) {
   const mailOptionsClient = {
     from: process.env.GMAIL_USER,
     to: facture.client_email,
-    subject: "Votre facture Support & Learn with Yann",
+    subject: "Votre facture **",
     text: "Veuillez trouver ci-joint votre facture.",
     attachments: [
       {

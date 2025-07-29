@@ -1,7 +1,9 @@
-// reserve-slot.js
+// ✅ api/reserve-slot.js — version fusionnée avec logique métier (crédits + mails)
+
 import express from "express";
-import { authorizeGoogleCalendar, createCalendarEvent } from "../utils/calendar.js";
-import { decrementCredits, getCredits } from "../utils/airtable.js";
+import { authorizeGoogle } from "../config/auth.js";
+import { google } from "googleapis";
+import { decrementCredits, getCredits } from "../utils/decrementcredits.js";
 import { sendMailWithAttachment } from "../utils/sendmail.js";
 
 const router = express.Router();
@@ -28,14 +30,34 @@ router.post("/reserve-slot", express.json(), async (req, res) => {
     const startDate = new Date(`${date}T${heure}:00`);
     const endDate = new Date(startDate.getTime() + duree * 60000);
 
-    const auth = await authorizeGoogleCalendar();
+    const auth = await authorizeGoogle();
+    const calendar = google.calendar({ version: "v3", auth });
 
-    const event = await createCalendarEvent({
-      auth,
-      summary: "Cours réservé",
-      description: `Réservé par ${email}`,
-      startTime: startDate.toISOString(),
-      endTime: endDate.toISOString(),
+    const event = {
+      summary: `Cours réservé par ${email}`,
+      description: `Réservation validée pour ${email}`,
+      start: {
+        dateTime: startDate.toISOString(),
+        timeZone: "Europe/Paris",
+      },
+      end: {
+        dateTime: endDate.toISOString(),
+        timeZone: "Europe/Paris",
+      },
+      attendees: [{ email }],
+      conferenceData: {
+        createRequest: {
+          requestId: `meet-${Date.now()}`,
+          conferenceSolutionKey: { type: "hangoutsMeet" },
+        },
+      },
+    };
+
+    const response = await calendar.events.insert({
+      calendarId: "primary",
+      requestBody: event,
+      conferenceDataVersion: 1,
+      sendUpdates: "all",
     });
 
     await decrementCredits(email);
@@ -46,7 +68,10 @@ router.post("/reserve-slot", express.json(), async (req, res) => {
       text: `Votre cours du ${date} à ${heure} a bien été réservé. Il vous reste ${credits - 1} crédit(s).`,
     });
 
-    res.status(200).json({ message: "Réservation confirmée", eventLink: event.htmlLink });
+    res.status(200).json({
+      message: "Réservation confirmée",
+      eventLink: response.data.htmlLink,
+    });
   } catch (err) {
     console.error("❌ Erreur lors de la réservation :", err);
     res.status(500).json({ error: "Erreur serveur lors de la réservation" });

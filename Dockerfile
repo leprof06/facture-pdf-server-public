@@ -1,6 +1,7 @@
+# ✅ Dockerfile corrigé pour Render (avec OpenSSL legacy + Chromium)
 FROM node:18-slim
 
-# Installe les dépendances de Puppeteer + Chrome
+# Chromium + dépendances pour Puppeteer
 RUN apt-get update && apt-get install -y \
     wget \
     ca-certificates \
@@ -22,17 +23,17 @@ RUN apt-get update && apt-get install -y \
     chromium \
     && apt-get clean
 
-# Définir le chemin vers Chromium pour Puppeteer
+# Définir le chemin vers Chromium pour Puppeteer (si utilisé)
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-# Dossier de l'app
+# Dossier de travail
 WORKDIR /app
 
-# Copie des fichiers
+# Copie du projet
 COPY . .
 
-# Install des dépendances
+# Installation des dépendances
 RUN npm install
 
-# Lancer l'app
-CMD ["npm", "start"]
+# ✅ Lancement avec OpenSSL legacy
+CMD ["node", "--openssl-legacy-provider", "server.js"]

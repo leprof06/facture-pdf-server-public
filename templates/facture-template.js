@@ -31,11 +31,11 @@ export const factureTemplate = `
   </header>
 
   <section>
-    <p><strong>Support & Learn with Yann</strong><br/>
-    Résidence du château bâtiment 3 escalier 6<br/>
-    06730 SAINT-ANDRÉ-DE-LA-ROCHE<br/>
-    France<br/>
-    +33 6 50 55 61 03</p>
+    <p><strong>NOM DE VOTRE ENTREPRISE</strong><br/>
+    VOTRE ADRESSE<br/>
+    CODE POSTAL ET LIEU<br/>
+    PAYS<br/>
+    +TELEPHONE</p>
 
     <p><strong>Facturé à :</strong><br/>
     {{client_nom}}<br/>
@@ -64,7 +64,7 @@ export const factureTemplate = `
   </table>
 
   <footer class="footer-note">
-    SIREN 829 343 029 – TVA non applicable, art. 293 B du CGI
+    SIREN ******** – TVA non applicable, art. 293 B du CGI
   </footer>
 </body>
 </html>

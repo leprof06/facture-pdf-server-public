@@ -3,7 +3,3 @@
 *.log
 /tokens
 /credentials.json
-.env
-tokens/
-config/credentials.json
-render.yaml

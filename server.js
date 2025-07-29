@@ -5,7 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
-import webhookStripe from "./api/webhook-orchestrateur.js";
+import webhookStripe from "./api/webhook-stripe.js";
 
 dotenv.config();
 
@@ -14,8 +14,8 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
-// Middleware Stripe : raw body requis uniquement pour le webhook Stripe
-app.post("/api/webhook-stripe", express.raw({ type: "application/json" }), webhookStripe);
+// ✅ Middleware Stripe : raw body requis + accepte tout type de Content-Type
+app.post("/api/webhook-stripe", express.raw({ type: "*/*" }), webhookStripe);
 
 // Middleware JSON classique pour les autres routes
 app.use(express.json());
@@ -41,4 +41,3 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`✅ Serveur en ligne sur le port ${PORT}`);
 });
-

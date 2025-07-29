@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
+
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
@@ -36,7 +37,7 @@ export async function sendNoCreditsAlert(to, nom) {
     from: process.env.OUTLOOK_USER,
     to,
     subject: "⛔ Crédits épuisés",
-    text: `Bonjour ${nom},\n\nVous avez utilisé tous vos crédits de cours. Merci de renouveler votre abonnement pour continuer à réserver.\n\nSupport & Learn with Yann`,
+    text: `Bonjour ${nom},\n\nVous avez utilisé tous vos crédits de cours. Merci de renouveler votre abonnement pour continuer à réserver.\n\n**`,
   };
 
   await transporter.sendMail(mailOptions);
@@ -60,7 +61,7 @@ export async function sendReservationConfirmation(to, nom, date, creditsRestants
     from: process.env.OUTLOOK_USER,
     to,
     subject: "📅 Confirmation de réservation",
-    text: `Bonjour ${nom},\n\nVotre cours a bien été réservé pour le ${date}.\nIl vous reste ${creditsRestants} crédit(s).\n\nMerci de votre confiance !\nSupport & Learn with Yann`,
+    text: `Bonjour ${nom},\n\nVotre cours a bien été réservé pour le ${date}.\nIl vous reste ${creditsRestants} crédit(s).\n\nMerci de votre confiance !\n**`,
   };
 
   await transporter.sendMail(mailOptions);
@@ -72,7 +73,7 @@ export async function sendRenewalNotification(to, nom, creditsAjoutes) {
     from: process.env.OUTLOOK_USER,
     to,
     subject: "🔄 Crédits renouvelés",
-    text: `Bonjour ${nom},\n\nVotre compte a été rechargé avec ${creditsAjoutes} crédits.\n\nVous pouvez dès maintenant réserver vos prochains cours !\n\nÀ très vite,\nSupport & Learn with Yann`,
+    text: `Bonjour ${nom},\n\nVotre compte a été rechargé avec ${creditsAjoutes} crédits.\n\nVous pouvez dès maintenant réserver vos prochains cours !\n\nÀ très vite,\n**`,
   };
 
   await transporter.sendMail(mailOptions);

@@ -1,8 +1,9 @@
-// /utils/calendar/creerevenement.js
+// ✅ utils/calendar/creerevenement.js — version restaurée avec Google Meet et participants
+
 import { google } from "googleapis";
 import { authorizeGoogle } from "../../config/auth.js";
 
-export async function creerEvenementCalendrier(facture) {
+export async function creerEvenementGoogleCalendar(facture) {
   const auth = await authorizeGoogle();
   const calendar = google.calendar({ version: "v3", auth });
 

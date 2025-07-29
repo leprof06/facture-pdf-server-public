@@ -1,24 +1,34 @@
-// /utils/airtable/getCredits.js
-import fetch from "node-fetch";
-import dotenv from "dotenv";
-import { AIRTABLE_URL } from "./constantes.js";
+// 📁 utils/google/getcredits.js
 
-dotenv.config();
 
-export async function getCredits(email) {
-  const response = await fetch(`${AIRTABLE_URL}?filterByFormula={Email}='${email}'`, {
-    headers: {
-      Authorization: `Bearer ${process.env.AIRTABLE_TOKEN}`,
-    },
+import { google } from "googleapis";
+import { authorizeGoogle, SPREADSHEET_ID } from "../../config/auth.js";
+
+const RANGE = "Tarifs!A2:B"; // Colonne A = prix, Colonne B = crédits
+
+/**
+ * Retourne le nombre de crédits correspondant à un prix donné
+ * @param {number} montant
+ * @returns {Promise<number>} crédits trouvés ou 0 si aucun prix ne correspond
+ */
+export async function getCreditsParMontant(montant) {
+  const auth = await authorizeGoogle();
+  const sheets = google.sheets({ version: "v4", auth });
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: RANGE,
   });
 
-  if (!response.ok) {
-    const errorData = await response.text();
-    throw new Error(`Erreur lors de la récupération des crédits : ${errorData}`);
+  const lignes = res.data.values || [];
+
+  for (const [prixStr, creditsStr] of lignes) {
+    const prix = parseFloat(prixStr);
+    if (Math.abs(montant - prix) < 0.01) {
+      return parseInt(creditsStr);
+    }
   }
 
-  const data = await response.json();
-  if (data.records && data.records.length === 0) return 0;
-  const record = data.records[0];
-  return record.fields["Crédits restants"] || 0;
+  console.warn(`💸 Aucun crédit trouvé pour le prix ${montant}€.`);
+  return 0;
 }

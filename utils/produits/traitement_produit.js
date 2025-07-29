@@ -1,65 +1,75 @@
-// utils/produits/traitementProduit.js
-import { google } from 'googleapis';
-import { envoyerMotDePasse } from "../email/envoyermotdepasse.js";
-import { envoyerLienEbook } from "../email/envoyerlienebook.js";
-import { creerEvenementCalendrier } from "../calendar/creerevenement.js";
+// ✅ fichier corrigé : utils/produits/traitement_produit.js
 
-/**
- * Retourne le nombre de crédits selon le montant payé (depuis Google Sheets)
- */
-export async function getCreditsFromTarif(auth, montant) {
-  const sheets = google.sheets({ version: 'v4', auth });
-  const range = 'Tarifs!A2:B';
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId: process.env.SPREADSHEET_ID,
-    range
-  });
+import { google } from "googleapis";
+import dotenv from "dotenv";
+dotenv.config();
 
-  const lignes = response.data.values || [];
-  for (const [prix, credits] of lignes) {
-    if (Number(prix) === Number(montant)) return Number(credits);
-  }
-  return 1; // Par défaut
-}
+import { authorizeGoogle, SPREADSHEET_ID } from "../../config/auth.js";
+import {
+  getProduitSpecial,
+  getLigneClientParEmailEtProduit,
+  updateCellule
+} from "../google/spreadsheet.js";
+import {
+  envoyerMotDePasse,
+  envoyerLienEbook,
+  ajouterCreditClient
+} from "./actions.js";
 
-/**
- * Vérifie si un produit correspond à une formation ou un ebook
- */
-export async function getProduitSpecial(auth, nomProduit) {
-  const sheets = google.sheets({ version: 'v4', auth });
-  const range = 'Produits spéciaux!A2:D';
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId: process.env.SPREADSHEET_ID,
-    range
-  });
+const RANGE = "Tarifs!A2:B"; // A = Prix, B = Crédits
 
-  const lignes = response.data.values || [];
-  for (const [motCle, type, action, valeur] of lignes) {
-    if (nomProduit.toLowerCase().includes(motCle.toLowerCase())) {
-      return { type, action, valeur };
-    }
-  }
-  return null;
-}
+export async function traiterProduit({ nom, email, produit, montant }) {
+  const auth = await authorizeGoogle();
 
-/**
- * Applique l’action à faire selon le type de produit acheté (cours / formation / ebook)
- */
-export async function traiterProduit({ auth, nom, email, produit, montant }) {
   const produitSpecial = await getProduitSpecial(auth, produit);
+  const ligneClient = await getLigneClientParEmailEtProduit(auth, email, produit);
+
+  if (!ligneClient) {
+    console.warn("Client introuvable dans Google Sheets");
+    return;
+  }
 
   if (produitSpecial) {
-    if (produitSpecial.action === 'envoyer_mot_de_passe') {
-      await envoyerMotDePasse(email, nom, produitSpecial.valeur);
-    } else if (produitSpecial.action === 'envoyer_lien_ebook') {
-      await envoyerLienEbook(email, nom, produitSpecial.valeur);
+    const { action, valeur, type } = produitSpecial;
+
+    if (action === "envoyer_mot_de_passe") {
+      await envoyerMotDePasse(email, nom, produit, valeur);
+      await updateCellule(auth, "Clients", ligneClient, 8, "Oui"); // Colonne H = mot de passe envoyé
     }
+
+    if (action === "envoyer_lien_ebook") {
+      await envoyerLienEbook(email, produit, valeur);
+      await updateCellule(auth, "Clients", ligneClient, 7, "Oui"); // Colonne G = ebook envoyé
+    }
+
+    if (action === "ajouter_credit") {
+      await ajouterCreditClient(auth, email, produit, valeur, type);
+      await updateCellule(auth, "Clients", ligneClient, 7, "Oui"); // Colonne G = lien calendrier envoyé
+    }
+
     return { estSpecial: true };
   }
 
-  // Produit standard → ajout crédits et création calendrier
-  const credits = await getCreditsFromTarif(auth, montant);
-  await creerEvenementCalendrier(email, nom); // ou seulement envoyer lien de réservation
+  return { estSpecial: false };
+}
 
-  return { estSpecial: false, credits };
+export async function getCreditsFromTarif(prix) {
+  const auth = await authorizeGoogle();
+  const sheets = google.sheets({ version: "v4", auth });
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: RANGE,
+  });
+
+  const lignes = res.data.values || [];
+
+  for (const [prixCell, creditsCell] of lignes) {
+    if (Number(prixCell) === Number(prix)) {
+      return Number(creditsCell);
+    }
+  }
+
+  console.warn(`Prix ${prix}€ non trouvé dans l’onglet Tarifs.`);
+  return 0;
 }

@@ -10,7 +10,7 @@ export async function authorizeGoogleCalendar() {
     installed: {
       client_id: process.env.GOOGLE_CLIENT_ID,
       client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      redirect_uris: ["https://facture-pdf-server.onrender.com/oauth2callback"]
+      redirect_uris: ["votre server/oauth2callback"]
     }
   };
 
@@ -41,11 +41,11 @@ export async function createCalendarEvent({ auth, summary, description, startTim
     description,
     start: {
       dateTime: startTime,
-      timeZone: "Europe/Paris",
+      timeZone: "Europe/Paris", //mettre votre time zone programmer pour la France
     },
     end: {
       dateTime: endTime,
-      timeZone: "Europe/Paris",
+      timeZone: "Europe/Paris", //mettre votre time zone programmer pour la France
     },
   };
 
