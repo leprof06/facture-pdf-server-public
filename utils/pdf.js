@@ -1,5 +1,6 @@
 // 📁 utils/pdf.js
-import puppeteer from "puppeteer";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 import { factureTemplate } from "../templates/facture-template.js";
 import { enqueuePDF } from "./pdfQueue.js";
 
@@ -16,20 +17,31 @@ export async function generatePDFBuffer(factureData) {
       .replaceAll("{{quantite}}", factureData.quantite)
       .replaceAll("{{description}}", factureData.description);
 
+    // ✅ Récupérer le binaire Chromium packagé pour Vercel
+    const executablePath = await chromium.executablePath();
+
     const browser = await puppeteer.launch({
-      headless: "new",
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath,
+      headless: true,
+      ignoreHTTPSErrors: true,
     });
 
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    try {
+      const page = await browser.newPage();
+      await page.setContent(html, {
+        waitUntil: ["load", "domcontentloaded", "networkidle0"],
+      });
 
-    const buffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-    });
+      const buffer = await page.pdf({
+        format: "A4",
+        printBackground: true,
+      });
 
-    await browser.close();
-    return buffer;
+      return buffer;
+    } finally {
+      await browser.close().catch(() => {});
+    }
   });
 }

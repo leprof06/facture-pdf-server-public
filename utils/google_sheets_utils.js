@@ -13,7 +13,7 @@ export async function exporterClients() {
 
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: //Nom de votre feuille moi c'était// "Clients !A2:G"
+    range: "Clients!A2:G"
   });
 
   return res.data.values || [];
@@ -47,7 +47,7 @@ export async function chercherClientParEmail(email) {
  */
 export async function getProduitSpecial(auth, nomProduit) {
   const sheets = google.sheets({ version: "v4", auth });
-  const range = //nom de votre page "Produits spéciaux!A2:D";
+  const range = "Produits spéciaux!A2:D";
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
     range,
@@ -67,7 +67,7 @@ export async function getProduitSpecial(auth, nomProduit) {
  */
 export async function getLigneClientParEmailEtProduit(auth, email, produit) {
   const sheets = google.sheets({ version: "v4", auth });
-  const range = //Nom de votre feuille moi c'était//"Clients!A2:D";
+  const range = "Clients!A2:D";
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
     range,
