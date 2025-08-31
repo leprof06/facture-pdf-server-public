@@ -10,7 +10,7 @@ export async function authorizeGoogleCalendar() {
     installed: {
       client_id: process.env.GOOGLE_CLIENT_ID,
       client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      redirect_uris: ["https://facture-pdf-server.onrender.com/oauth2callback"]
+      redirect_uris: ["votre server"]
     }
   };
 
