@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import { dirname } from "path";
 
 import webhookStripe from "./api/webhook-stripe.js";
+import { verifierMisesAJourProduits } from "./utils/produits/verifierMisesAJourProduits.js"; // ✅ ajout
 
 dotenv.config();
 
@@ -35,6 +36,22 @@ app.put("/api/webhook-stripe", (req, res) => {
 
 app.post("/api/webhook-stripe-test", (req, res) => {
   res.send("🔵 POST test reçu - ce n’est pas Stripe !");
+});
+
+// ✅ Route ping (existe déjà)
+app.get("/ping", (req, res) => {
+  res.send("✅ Ping OK - serveur réveillé !");
+});
+
+// ✅ Nouvelle route pour vérifier les mises à jour Drive
+app.get("/check-updates", async (req, res) => {
+  try {
+    await verifierMisesAJourProduits();
+    res.status(200).send("✅ Vérification des mises à jour terminée");
+  } catch (error) {
+    console.error("❌ Erreur lors de la vérification des mises à jour :", error);
+    res.status(500).send("Erreur lors de la vérification des mises à jour");
+  }
 });
 
 const PORT = process.env.PORT || 10000;

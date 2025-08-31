@@ -3,24 +3,22 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "dev": "vercel dev",
+    "build": "echo \"no build step\"",
+    "start": "node api/index.mjs"
+  },
+  "engines": {
+    "node": "20.x"
   },
   "dependencies": {
     "@sparticuz/chromium": "^138.0.2",
-    "airtable": "^0.12.2",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "googleapis": "^149.0.0",
-    "node-fetch": "^2.7.0",
     "nodemailer": "^7.0.3",
     "open": "^10.1.2",
     "pdf-lib": "^1.17.1",
-    "puppeteer": "^22.15.0",
-    "puppeteer-core": "^24.15.0",
-    "raw-body": "^3.0.0",
-    "stripe": "^12.17.0"
-  },
-  "engines": {
-    "node": ">=18"
+    "puppeteer-core": "^24.17.1",
+    "stripe": "^16.12.0"
   }
 }
