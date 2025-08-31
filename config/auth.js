@@ -4,7 +4,7 @@ import path from "path";
 import { google } from "googleapis";
 
 // 📌 Chargement dynamique du fichier JSON local (même dossier que ce fichier)
-const jsonPath = path.resolve("config", "nom de votre fichier json");
+const jsonPath = path.resolve("config", "agenda-auto-reservations-f2291e47889f.json");
 const credentials = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
 
 // 🧾 ID de la feuille Google Sheets
@@ -17,9 +17,11 @@ export async function authorizeGoogle() {
     null,
     credentials.private_key,
     [
-      "https://www.googleapis.com/auth/spreadsheets",
-      "https://www.googleapis.com/auth/calendar",
+      "https://www.googleapis.com/auth/spreadsheets",        // accès Google Sheets
+      "https://www.googleapis.com/auth/calendar",            // accès Google Calendar
+      "https://www.googleapis.com/auth/drive.metadata.readonly", // accès aux métadonnées Google Drive
     ]
   );
   return auth;
 }
+
